@@ -11,6 +11,11 @@ def wifi_connect(WiFi_name, WiFi_password):
     wlan.active(True)
     time.sleep(0.5)
 
+    try:
+        wlan.config(pm=0)  # disable WiFi power-save (fixes dropped HTTPS)
+    except Exception:
+        pass
+
     if not wlan.isconnected():
         print('connecting to network...')
         wlan.connect(WiFi_name, WiFi_password)

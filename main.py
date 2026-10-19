@@ -23,6 +23,10 @@ Telegram_Poll_timeout   = getattr(Config, 'Telegram_Poll_timeout', 5)
 # ====== WiFi ======
 def ensure_wifi(first=False):
     wlan = network.WLAN(network.STA_IF)
+    try:
+        wlan.config(pm=0)  # disable WiFi power-save (fixes dropped HTTPS)
+    except Exception:
+        pass
     if wlan.isconnected():
         return True
 
