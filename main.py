@@ -30,7 +30,7 @@ bot = ubot(
     poll_timeout=Telegram_Poll_timeout,
 )
 try:
-    bot.send("Booted at: " + clk.now_str())
+    bot.send("Booted at: " + clk.now_str() +"🫨")
 except Exception as e:
     print("Boot send error:", e)
 print("Telegram bot setup done")
@@ -131,13 +131,13 @@ def handle_off(message):
     print("handle_off triggered")
     global relay_enabled, relay_off_at_ts
     if not relay_enabled:
-        send_state("Device Already OFF")
+        send_state("Device Already OFF ❌")
         return
 
     relay_enabled = False
     relay_off_at_ts = None
     apply_outputs()
-    send_state("Device Turned OFF")
+    send_state("Device Turned OFF 🔴")
 
 def handle_status(message):
     print("handle_status triggered")
@@ -148,7 +148,7 @@ def handle_status(message):
         bot.send(
             "Relay Control\n"
             "Device Status\n"
-            "Relay : ON\n"
+            "Relay : ON\n 🟢"
             "Left  : " + str(remaining) + " second(s)\n"
             "Time  : " + clk.now_str()
         )
@@ -159,7 +159,7 @@ def handle_ping(message):
     print("handle_ping triggered")
     bot.send(
         "Relay Control\n"
-        "PONG\n"
+        "PONG\n 🏓"
         "Time  : " + clk.now_str()
     )
 
