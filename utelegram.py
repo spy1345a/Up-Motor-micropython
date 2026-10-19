@@ -36,15 +36,15 @@ class ubot:
             response = None
             try:
                 response = urequests.post(self.url + '/sendMessage', data=body, headers=headers)
-                body = response.text
+                resp_text = response.text
                 try:
-                    result = ujson.loads(body)
+                    result = ujson.loads(resp_text)
                 except Exception:
                     result = None
                 if result is not None and result.get('ok', False):
                     return True
-                last_error = body
-                print("send attempt", attempt, "rejected:", body)
+                last_error = resp_text
+                print("send attempt", attempt, "rejected:", resp_text)
             except Exception as e:
                 last_error = e
                 print("send attempt", attempt, "error:", e)
