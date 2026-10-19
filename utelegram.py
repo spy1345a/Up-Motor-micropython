@@ -23,32 +23,37 @@ class ubot:
             self.message_offset = messages[-1]['update_id'] + 1
 
 
-    def send(self, text):
+    def send(self, text, retries=3):
         data = {'chat_id': self.chat_id, 'text': text}
-        response = None
-        try:
-            headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-            response = urequests.post(self.url + '/sendMessage', json=data, headers=headers)
-            body = response.text
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        last_error = None
+        for attempt in range(1, retries + 1):
+            response = None
             try:
-                result = ujson.loads(body)
-            except Exception:
-                result = None
-            if result is not None and not result.get('ok', False):
-                print("send API error:", body)
-                return False
-            return True
-        except Exception as e:
-            print("send error:", e)
-            return False
-        finally:
-            if response is not None:
+                response = urequests.post(self.url + '/sendMessage', json=data, headers=headers)
+                body = response.text
                 try:
-                    response.close()
+                    result = ujson.loads(body)
                 except Exception:
-                    pass
+                    result = None
+                if result is not None and result.get('ok', False):
+                    return True
+                last_error = body
+                print("send attempt", attempt, "rejected:", body)
+            except Exception as e:
+                last_error = e
+                print("send attempt", attempt, "error:", e)
+            finally:
+                if response is not None:
+                    try:
+                        response.close()
+                    except Exception:
+                        pass
+            time.sleep(1)
+        print("send failed after", retries, "attempts:", last_error)
+        return False
 
-    def read_messages(self):
+    def read_messages(self, retries=2):
         result = []
         self.query_updates = {
             'offset': self.message_offset,
@@ -56,25 +61,27 @@ class ubot:
             'timeout': self.poll_timeout,
             'allowed_updates': ['message']}
 
-        response = None
-        try:
-            response = urequests.post(self.url + '/getUpdates', json=self.query_updates)
-            update_messages = response.json()
-            if update_messages and 'result' in update_messages:
-                for item in update_messages['result']:
-                    result.append(item)
-            return result
-        except (ValueError):
-            return None
-        except (OSError):
-            print("OSError: request timed out")
-            return None
-        finally:
-            if response is not None:
-                try:
-                    response.close()
-                except Exception:
-                    pass
+        for attempt in range(1, retries + 1):
+            response = None
+            try:
+                response = urequests.post(self.url + '/getUpdates', json=self.query_updates)
+                update_messages = response.json()
+                if update_messages and 'result' in update_messages:
+                    for item in update_messages['result']:
+                        result.append(item)
+                return result
+            except (ValueError):
+                return None
+            except OSError as e:
+                print("read_messages error (attempt %d/%d): %s" % (attempt, retries, e))
+            finally:
+                if response is not None:
+                    try:
+                        response.close()
+                    except Exception:
+                        pass
+            time.sleep(1)
+        return None
 
     def listen(self):
         while True:
