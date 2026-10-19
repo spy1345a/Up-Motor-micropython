@@ -29,6 +29,14 @@ class ubot:
         try:
             headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
             response = urequests.post(self.url + '/sendMessage', json=data, headers=headers)
+            body = response.text
+            try:
+                result = ujson.loads(body)
+            except Exception:
+                result = None
+            if result is not None and not result.get('ok', False):
+                print("send API error:", body)
+                return False
             return True
         except Exception as e:
             print("send error:", e)
