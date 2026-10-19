@@ -113,8 +113,10 @@ class ubot:
     def message_handler(self, message):
         if 'text' in message['message']:
             parts = message['message']['text'].split(' ')
-            if parts[0] in self.commands:
-                self.commands[parts[0]](message)
+            # In groups Telegram sends '/cmd@BotUsername'; strip the @username
+            command = parts[0].split('@')[0]
+            if command in self.commands:
+                self.commands[command](message)
             else:
                 if self.default_handler:
                     self.default_handler(message)
