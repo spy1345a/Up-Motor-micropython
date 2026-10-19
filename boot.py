@@ -25,6 +25,9 @@ def wifi_connect(WiFi_name, WiFi_password):
             time.sleep(1)
             timeout -= 1
 
-    print('network config:', wlan.ipconfig('addr4'))
+    try:
+        print('network config:', wlan.ipconfig('addr4'))
+    except (AttributeError, OSError):
+        print('network config:', wlan.ifconfig())
 
 wifi_connect(WiFi_name=Config.WIFI_NAME, WiFi_password=Config.WIFI_PASS)

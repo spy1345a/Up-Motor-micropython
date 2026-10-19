@@ -1,4 +1,6 @@
 import time
+import gc
+import network
 from config import Config
 from utelegram import ubot
 from TimeManager import TimeManager
@@ -13,15 +15,20 @@ led   = machine.Pin(Config.Led_pin,   machine.Pin.OUT, value=0)
 relay = machine.Pin(Config.Relay_pin, machine.Pin.OUT, value=0)
 
 # Timings Config
-TimeZone               = Config.TimeZone
+TimeZone                = Config.TimeZone
 Telegram_Check_interval = Config.Telegram_Check_internal
 LOOP_INTERVAL           = Config.short_detect_interval
+Telegram_Poll_timeout   = getattr(Config, 'Telegram_Poll_timeout', 5)
 
 # ====== Time & Bot ======
 clk = TimeManager(timezone_offset_hours=TimeZone)
 print("Boot time:", clk.now_str())
 
-bot = ubot(token=Telegram_token, chat_id=Group_id)
+bot = ubot(
+    token=Telegram_token,
+    chat_id=Group_id,
+    poll_timeout=Telegram_Poll_timeout,
+)
 try:
     bot.send("Booted at: " + clk.now_str())
 except Exception as e:
@@ -32,6 +39,7 @@ print("Telegram bot setup done")
 relay_enabled     = False
 relay_off_at_ts   = None
 last_poll_ts      = 0
+last_applied      = None
 
 # ====== Helpers ======
 def relay_on():  relay.value(1)
@@ -40,12 +48,39 @@ def led_on():    led.value(1)
 def led_off():   led.value(0)
 
 def apply_outputs():
+    global last_applied
+    if last_applied == relay_enabled:
+        return
     if relay_enabled:
         relay_on()
         led_on()
     else:
         relay_off()
         led_off()
+    last_applied = relay_enabled
+
+def ensure_wifi():
+    wlan = network.WLAN(network.STA_IF)
+    if wlan.isconnected():
+        return True
+
+    print("WiFi lost - reconnecting...")
+    try:
+        wlan.active(True)
+        wlan.connect(Config.WIFI_NAME, Config.WIFI_PASS)
+        timeout = 15
+        while not wlan.isconnected() and timeout > 0:
+            time.sleep(1)
+            timeout -= 1
+    except Exception as e:
+        print("WiFi reconnect error:", e)
+
+    if wlan.isconnected():
+        print("WiFi reconnected")
+        return True
+
+    print("WiFi reconnect failed")
+    return False
 
 def get_text(message):
     if 'message' not in message:
@@ -125,14 +160,14 @@ def handle_ping(message):
     bot.send(
         "Relay Control\n"
         "PONG\n"
-        "Time: " + clk.now_str()
+        "Time  : " + clk.now_str()
     )
 
 def handle_time(message):
     print("handle_time triggered")
     bot.send(
         "Relay Control\n"
-        "Time: " + clk.now_str()
+        "Time  : " + clk.now_str()
     )
 
 def handle_default(message):
@@ -160,11 +195,12 @@ print("Listening...\n")
 
 # ====== Main Loop ======
 while True:
+    ensure_wifi()
+
     if relay_enabled and relay_off_at_ts is not None:
         if clk.timestamp() >= relay_off_at_ts:
             relay_enabled = False
             relay_off_at_ts = None
-            apply_outputs()
             bot.send(
                 "Relay Control\n"
                 "Timer completed\n"
@@ -181,5 +217,6 @@ while True:
         except Exception as e:
             print("Poll error:", e)
         last_poll_ts = clk.timestamp()
+        gc.collect()
 
     time.sleep(LOOP_INTERVAL)

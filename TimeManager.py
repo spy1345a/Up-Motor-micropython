@@ -3,9 +3,26 @@ import time
 
 class TimeManager:
     
-    def __init__(self, timezone_offset_hours):
+    def __init__(self, timezone_offset_hours, ntp_retries=3, retry_delay=2):
         self.tz_offset = int(timezone_offset_hours * 3600)
-        ntptime.settime()
+        self.synced = self._sync_time(ntp_retries, retry_delay)
+
+    def _sync_time(self, retries, delay):
+        """Try to sync via NTP. Returns True on success; on repeated failure
+        it warns and continues (delta-based timers still work)."""
+        last_error = None
+        for attempt in range(1, retries + 1):
+            try:
+                ntptime.settime()
+                print("NTP sync OK")
+                return True
+            except Exception as e:
+                last_error = e
+                print("NTP sync failed ({}/{}): {}".format(attempt, retries, e))
+                time.sleep(delay)
+        print("WARNING: NTP sync failed after {} attempts: {}".format(retries, last_error))
+        print("WARNING: clock not synced; only time deltas are reliable")
+        return False
     
     def now(self):
         """Returns (year, month, day, hour, minute, second)"""

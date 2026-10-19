@@ -7,46 +7,52 @@ import urequests
 
 class ubot:
     
-    def __init__(self, token, chat_id, offset=0):
+    def __init__(self, token, chat_id, offset=0, poll_timeout=5):
         self.url = 'https://api.telegram.org/bot' + token
         self.commands = {}
         self.default_handler = None
+        # message_offset is the next update_id Telegram should return
         self.message_offset = offset
         self.sleep_btw_updates = 3
+        self.poll_timeout = poll_timeout
         self.chat_id = chat_id
-        
+
+        # Drop any messages that arrived before/while booting
         messages = self.read_messages()
         if messages:
-            if self.message_offset==0:
-                self.message_offset = messages[-1]['update_id']
-            else:
-                for message in messages:
-                    if message['update_id'] >= self.message_offset:
-                        self.message_offset = message['update_id']
-                        break
+            self.message_offset = messages[-1]['update_id'] + 1
 
 
     def send(self, text):
         data = {'chat_id': self.chat_id, 'text': text}
+        response = None
         try:
             headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
             response = urequests.post(self.url + '/sendMessage', json=data, headers=headers)
-            response.close()
             return True
-        except:
+        except Exception as e:
+            print("send error:", e)
             return False
+        finally:
+            if response is not None:
+                try:
+                    response.close()
+                except Exception:
+                    pass
 
     def read_messages(self):
         result = []
         self.query_updates = {
-            'offset': self.message_offset + 1,
-            'limit': 1,
-            'timeout': 30,
+            'offset': self.message_offset,
+            'limit': 10,
+            'timeout': self.poll_timeout,
             'allowed_updates': ['message']}
 
+        response = None
         try:
-            update_messages = urequests.post(self.url + '/getUpdates', json=self.query_updates).json() 
-            if 'result' in update_messages:
+            response = urequests.post(self.url + '/getUpdates', json=self.query_updates)
+            update_messages = response.json()
+            if update_messages and 'result' in update_messages:
                 for item in update_messages['result']:
                     result.append(item)
             return result
@@ -55,6 +61,12 @@ class ubot:
         except (OSError):
             print("OSError: request timed out")
             return None
+        finally:
+            if response is not None:
+                try:
+                    response.close()
+                except Exception:
+                    pass
 
     def listen(self):
         while True:
@@ -65,15 +77,9 @@ class ubot:
     def read_once(self):
         messages = self.read_messages()
         if messages:
-            if self.message_offset==0:
-                self.message_offset = messages[-1]['update_id']
-                self.message_handler(messages[-1])
-            else:
-                for message in messages:
-                    if message['update_id'] >= self.message_offset:
-                        self.message_offset = message['update_id']
-                        self.message_handler(message)
-                        break
+            for message in messages:
+                self.message_offset = message['update_id'] + 1
+                self.message_handler(message)
     
     def register(self, command, handler):
         self.commands[command] = handler
