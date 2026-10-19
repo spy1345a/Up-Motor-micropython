@@ -107,7 +107,7 @@ def start_relay_for_minutes(minutes):
     apply_outputs()
     bot.send(
         "Relay Control\n"
-        "Device Turned ON\n"
+        "Device Turned ON 🟢\n"
         "Duration: " + str(minutes) + " minute(s)\n"
         "Time  : " + clk.now_str()
     )
@@ -215,7 +215,7 @@ while True:
             bot.send(
                 "Relay Control\n"
                 "Timer completed\n"
-                "Device Turned OFF\n"
+                "Device Turned OFF 🔴\n"
                 "Time  : " + clk.now_str()
             )
 
