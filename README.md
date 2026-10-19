@@ -75,3 +75,12 @@ to the board (e.g. with `mpremote` or `ampy`), then reset:
 mpremote cp boot.py main.py TimeManager.py utelegram.py config.py :
 mpremote reset
 ```
+
+## License
+
+Licensed under the **PolyForm Noncommercial License 1.0.0** — see [LICENSE](LICENSE).
+
+You are free to use, copy, modify, and share this code for any
+**noncommercial** purpose (personal, hobby, educational, research, charity,
+etc.). **Commercial use is not permitted.** For commercial licensing, contact
+the licensor.
