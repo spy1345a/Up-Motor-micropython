@@ -30,7 +30,7 @@ class ubot:
             body = body.encode('utf-8')  # bytes -> correct Content-Length for emojis
         except AttributeError:
             pass
-        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        headers = {'Content-Type': 'application/json', 'Accept': 'text/plain'}
         last_error = None
         for attempt in range(1, retries + 1):
             response = None
