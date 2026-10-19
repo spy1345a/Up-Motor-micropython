@@ -5,15 +5,15 @@ class Config:
     
     ## Telegram config
     TOKEN = 'TELEGRAM_BOT_TOKEN'
-    GROUP_ID = TELEGRAM_GROUP_ID # this is intiger negative or positive
+    GROUP_ID = -12345678 # this is intiger negative or positive
     
     ## Pin Config
     Led_pin = 8 # in-Build led of esp32 c3 super mini
     Relay_pin = 10 ## well techenially it is controlling a NPN transister
-    Short_detection = 3
+    Short_detection = 3 # not used , maybe updated later
     
     ##Time settings
-    TimeZone = TIMEZONE # this is float, it uses GMT 
+    TimeZone = 0.0 # this is float, it uses GMT 
     
     ## Timings settings
     Telegram_Check_internal = 10 #secondes

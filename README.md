@@ -18,6 +18,7 @@ optional auto-off timer.
 |------|------|
 | `boot.py` | Connects to WiFi at startup; reboots if it times out. |
 | `config.py` | **Local secrets/settings — not committed.** See below. |
+| `example.config.py` | Template to copy into `config.py` (committed). |
 | `main.py` | Relay/LED pins, command handlers, timer logic, main loop. |
 | `TimeManager.py` | NTP sync, timezone offset, timestamp/interval helpers. |
 | `utelegram.py` | Small homemade Telegram bot library (long-poll). |
@@ -37,7 +38,9 @@ Plain text (no slash) also works: `on`, `off`, `status`.
 ## `config.py` (create it yourself, keep it private)
 
 `config.py` is git-ignored because it holds WiFi and Telegram credentials.
-Create it next to `main.py` with a `Config` class holding these attributes:
+A ready-to-edit template is provided as **`example.config.py`** — copy it to
+`config.py` and fill in your own values.
+It defines a `Config` class with these attributes:
 
 ```python
 class Config:
