@@ -148,7 +148,7 @@ def handle_status(message):
         bot.send(
             "Relay Control\n"
             "Device Status\n"
-            "Relay : ON\n 🟢"
+            "Relay : ON 🟢\n"
             "Left  : " + str(remaining) + " second(s)\n"
             "Time  : " + clk.now_str()
         )
@@ -159,7 +159,7 @@ def handle_ping(message):
     print("handle_ping triggered")
     bot.send(
         "Relay Control\n"
-        "PONG\n 🏓"
+        "PONG 🏓\n"
         "Time  : " + clk.now_str()
     )
 
