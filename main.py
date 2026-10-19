@@ -20,6 +20,36 @@ Telegram_Check_interval = Config.Telegram_Check_internal
 LOOP_INTERVAL           = Config.short_detect_interval
 Telegram_Poll_timeout   = getattr(Config, 'Telegram_Poll_timeout', 5)
 
+# ====== WiFi ======
+def ensure_wifi(first=False):
+    wlan = network.WLAN(network.STA_IF)
+    if wlan.isconnected():
+        return True
+
+    print("Connecting to WiFi..." if first else "WiFi lost - reconnecting...")
+    try:
+        wlan.active(True)
+        wlan.connect(Config.WIFI_NAME, Config.WIFI_PASS)
+        timeout = 20 if first else 15
+        while not wlan.isconnected() and timeout > 0:
+            time.sleep(1)
+            timeout -= 1
+    except Exception as e:
+        print("WiFi error:", e)
+
+    if wlan.isconnected():
+        try:
+            print("WiFi connected:", wlan.ifconfig())
+        except Exception:
+            print("WiFi connected")
+        return True
+
+    print("WiFi connection failed")
+    return False
+
+# Connect before anything that needs the network (NTP + Telegram)
+ensure_wifi(first=True)
+
 # ====== Time & Bot ======
 clk = TimeManager(timezone_offset_hours=TimeZone)
 print("Boot time:", clk.now_str())
@@ -58,29 +88,6 @@ def apply_outputs():
         relay_off()
         led_off()
     last_applied = relay_enabled
-
-def ensure_wifi():
-    wlan = network.WLAN(network.STA_IF)
-    if wlan.isconnected():
-        return True
-
-    print("WiFi lost - reconnecting...")
-    try:
-        wlan.active(True)
-        wlan.connect(Config.WIFI_NAME, Config.WIFI_PASS)
-        timeout = 15
-        while not wlan.isconnected() and timeout > 0:
-            time.sleep(1)
-            timeout -= 1
-    except Exception as e:
-        print("WiFi reconnect error:", e)
-
-    if wlan.isconnected():
-        print("WiFi reconnected")
-        return True
-
-    print("WiFi reconnect failed")
-    return False
 
 def get_text(message):
     if 'message' not in message:
