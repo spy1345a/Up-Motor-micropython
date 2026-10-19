@@ -7,6 +7,8 @@ optional auto-off timer.
 ## What it does
 
 - Connects to WiFi on boot and reconnects automatically if the link drops.
+- Runs the CPU at **80 MHz** (down from the 160 MHz default) to stay cooler —
+  80 MHz is the lowest frequency that still keeps WiFi working.
 - Syncs the clock over NTP and applies a timezone offset.
 - Listens for Telegram messages and controls a relay (and status LED).
 - `/on <minutes>` turns the relay on for a set duration, then switches it off automatically.

@@ -6,6 +6,13 @@ from utelegram import ubot
 from TimeManager import TimeManager
 import machine
 
+# 80 MHz is the lowest CPU frequency that still keeps WiFi working.
+# Lowering it from the 160 MHz default makes the chip run noticeably cooler.
+try:
+    machine.freq(80_000_000)
+except Exception:
+    pass
+
 # ====== Config ======
 Telegram_token = Config.TOKEN
 Group_id       = Config.GROUP_ID

@@ -3,6 +3,13 @@ import network
 import machine
 import time
 
+# 80 MHz is the lowest CPU frequency that still keeps WiFi working.
+# Lowering it from the 160 MHz default makes the chip run noticeably cooler.
+try:
+    machine.freq(80_000_000)
+except Exception:
+    pass
+
 def wifi_connect(WiFi_name, WiFi_password):
     wlan = network.WLAN(network.STA_IF)
     
