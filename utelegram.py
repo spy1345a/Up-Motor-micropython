@@ -24,13 +24,18 @@ class ubot:
 
 
     def send(self, text, retries=3):
-        data = {'chat_id': self.chat_id, 'text': text}
+        payload = {'chat_id': self.chat_id, 'text': text}
+        body = ujson.dumps(payload)
+        try:
+            body = body.encode('utf-8')  # bytes -> correct Content-Length for emojis
+        except AttributeError:
+            pass
         headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
         last_error = None
         for attempt in range(1, retries + 1):
             response = None
             try:
-                response = urequests.post(self.url + '/sendMessage', json=data, headers=headers)
+                response = urequests.post(self.url + '/sendMessage', data=body, headers=headers)
                 body = response.text
                 try:
                     result = ujson.loads(body)
