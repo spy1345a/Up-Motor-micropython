@@ -60,12 +60,13 @@ class Config:
 
     # Timing
     TimeZone                 = 0     # hours offset from UTC
-    Telegram_Check_internal  = 3     # seconds between Telegram polls
+    Telegram_Check_interval  = 3     # seconds between Telegram polls
     short_detect_interval    = 0.5   # main loop sleep (seconds)
     Telegram_Poll_timeout    = 5     # optional; long-poll wait (defaults to 5)
+    NTP_RESYNC               = 3600  # optional; NTP resync period (defaults to 3600)
 ```
 
-> Note: attribute names `Telegram_Check_internal` and `short_detect_interval` are
+> Note: attribute name `short_detect_interval` is
 > spelled exactly as used by the code.
 
 ## Deploy
